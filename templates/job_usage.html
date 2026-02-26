@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Usage - Powder Paint Stock</title>
+  <style>
+    :root {
+      --bg: #f2f4f5;
+      --card: #ffffff;
+      --ink: #172026;
+      --muted: #6a7780;
+      --border: #d8dee3;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-link, .btn-logout {
+      text-decoration: none;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-jobs { background: #0b7f75; }
+    .btn-admin { background: #7a2f8f; }
+    .btn-logout { background: #51606b; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    th {
+      background: #f7f9fb;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Job Usage: {{ job.code }}</h1>
+      <div class="actions">
+        <a class="btn-link btn-jobs" href="/jobs">Jobs</a>
+        <a class="btn-link btn-admin" href="/admin/database">Admin</a>
+        <span>{{ user.username }} ({{ user.role }})</span>
+        <form method="post" action="/logout">
+          <button class="btn-logout" type="submit">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <p><strong>Description:</strong> {{ job.description }}</p>
+      <p><strong>Customer:</strong> {{ job.customer or "-" }}</p>
+      <p><strong>Status:</strong> {{ job.status }}</p>
+      <p><strong>Created:</strong> {{ job.created_at }}</p>
+      <p><strong>Finalized:</strong> {{ job.finalized_at or "-" }}</p>
+      <p><strong>Total Powder Used:</strong> {{ totals.total_used_kg }} kg</p>
+      <p><strong>Total Return Events:</strong> {{ totals.total_returns }}</p>
+    </div>
+
+    <h3>Usage by Line + RAL + Gloss</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Line</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Used (kg)</th>
+          <th>Return Events</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in usage_rows %}
+        <tr>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.used_kg }}</td>
+          <td>{{ row.return_events }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No usage recorded for this job yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

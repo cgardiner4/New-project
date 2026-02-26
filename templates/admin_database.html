@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Database Settings</title>
+  <style>
+    :root {
+      --bg: #f2f4f5;
+      --card: #ffffff;
+      --ink: #172026;
+      --muted: #6a7780;
+      --accent: #0d6efd;
+      --border: #d8dee3;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 880px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-link, button {
+      text-decoration: none;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-home { background: #0b7f75; }
+    .btn-logout { background: #51606b; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin: 8px 0 4px;
+      color: var(--muted);
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+    .submit {
+      background: var(--accent);
+      margin-top: 12px;
+    }
+    .flash {
+      background: #fff6da;
+      border: 1px solid #f0d79d;
+      color: #5d4300;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .meta {
+      color: var(--muted);
+      margin: 6px 0;
+      word-break: break-all;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    th {
+      background: #f7f9fb;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .delete-btn {
+      margin: 0;
+      background: #b42318;
+      padding: 6px 9px;
+      font-size: 0.8rem;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+    .inline-form {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      margin: 0;
+    }
+    .inline-form select {
+      width: auto;
+      min-width: 110px;
+      margin: 0;
+    }
+    .small-btn {
+      margin: 0;
+      padding: 6px 9px;
+      font-size: 0.8rem;
+      background: #0d6efd;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Admin Database Settings</h1>
+      <div class="actions">
+        <a class="btn-link btn-home" href="/">Dashboard</a>
+        <span>{{ user.username }} ({{ user.role }})</span>
+        <form method="post" action="/logout">
+          <button class="btn-logout" type="submit">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <p class="meta"><strong>Current Database File:</strong> {{ current_db_path }}</p>
+      <p class="meta"><strong>Current Database Directory:</strong> {{ current_db_directory }}</p>
+    </div>
+
+    <div class="card">
+      <h2>Change Database Directory</h2>
+      <form method="post" action="/admin/database">
+        <label>New Directory (absolute or relative to app folder)</label>
+        <input name="db_directory" placeholder="/path/to/database-folder" required />
+        <button class="submit" type="submit">Update Database Directory</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>User Access Management</h2>
+      <form method="post" action="/admin/users/add">
+        <label>Username</label>
+        <input name="username" required />
+        <label>Password</label>
+        <input type="password" name="password" required />
+        <label>Access Role</label>
+        <select name="role" required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="submit" type="submit">Add User</button>
+      </form>
+
+      <h3>Existing Users</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Created</th>
+            <th>Update Access</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in users %}
+          <tr>
+            <td>{{ row.username }}</td>
+            <td>{{ row.role }}</td>
+            <td>{{ row.created_at }}</td>
+            <td>
+              <form class="inline-form" method="post" action="/admin/users/role">
+                <input type="hidden" name="username" value="{{ row.username }}" />
+                <select name="role" required>
+                  <option value="user" {% if row.role == "user" %}selected{% endif %}>User</option>
+                  <option value="admin" {% if row.role == "admin" %}selected{% endif %}>Admin</option>
+                </select>
+                <button class="small-btn" type="submit">Save</button>
+              </form>
+            </td>
+            <td>
+              <form method="post" action="/admin/users/delete">
+                <input type="hidden" name="username" value="{{ row.username }}" />
+                <button class="delete-btn" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Delete Added Paint</h2>
+      <p class="muted">Only boxes with no checkout/usage history can be deleted.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Box</th>
+            <th>RAL</th>
+            <th>Gloss</th>
+            <th>Weight (kg)</th>
+            <th>Status</th>
+            <th>Usage Records</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for box in boxes %}
+          <tr>
+            <td>{{ box.id }}</td>
+            <td>{{ box.ral }}</td>
+            <td>{{ box.gloss }}</td>
+            <td>{{ box.current_weight_kg }}</td>
+            <td>{{ box.status }}</td>
+            <td>{{ box.movement_count }}</td>
+            <td>
+              {% if box.status == "IN_STOCK" and box.movement_count == 0 %}
+              <form method="post" action="/admin/paint/{{ box.id }}/delete">
+                <button class="delete-btn" type="submit">Delete</button>
+              </form>
+              {% else %}
+              <span class="muted">Locked</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">No paint boxes added.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+# Powder Paint Stock Monitor
+
+Simple web app to track powder paint boxes by:
+
+- `RAL` colour
+- `Gloss`
+- current weight (kg)
+- checkout/check-in usage per job
+
+## Features
+
+- Register paint boxes with barcode/ID.
+- Scan out to a job and capture weight at checkout.
+- Scan back from job and capture return weight.
+- Automatically calculate paint used: `out_weight - in_weight`.
+- View current in-stock totals grouped by `RAL + Gloss`.
+- Role-based login (`admin`, `user`).
+- `user` role can only scan in/out.
+- Admin job creation page (`/jobs`) to create job codes.
+- Scan-out only allows existing open jobs.
+- Admin can finalize jobs and view total usage per finalized job.
+- Admin can delete jobs that have no stock movement history.
+- Analytics page (`/analytics`) for usage by paint type, job, and month.
+- Scan-out requires selecting `Line 1` or `Line 2`.
+- Usage reports and analytics include line-based totals.
+- Admin settings page (`/admin/database`) to change the database directory.
+- Admin page can add/remove users and change access role (`admin` or `user`).
+- Admin page can delete added paint boxes (only when no usage history exists).
+- Box setup validation:
+- `RAL` must be selected from the RAL Classic colour chart list.
+- `Gloss` is restricted to `Matt`, `Semi Gloss`, or `Gloss`.
+
+## Run
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Open:
+
+`http://127.0.0.1:5000`
+
+## Login
+
+- Admin: `admin` / `admin123`
+- User: `user` / `user123`
+
+Permissions:
+
+- `admin`: full access
+- `user`: scan out and scan in only

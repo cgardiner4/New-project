@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Powder Paint Stock</title>
+  <style>
+    :root {
+      --bg: #f2f4f5;
+      --card: #ffffff;
+      --ink: #172026;
+      --muted: #6a7780;
+      --accent: #0d6efd;
+      --ok: #0a7d4f;
+      --warn: #b45309;
+      --border: #d8dee3;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 24px auto 48px;
+      padding: 0 16px;
+    }
+    h1 { margin: 0 0 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      margin: 0 0 10px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin: 8px 0 4px;
+      color: var(--muted);
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    button {
+      margin-top: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .flash {
+      background: #fff6da;
+      border: 1px solid #f0d79d;
+      color: #5d4300;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    th {
+      background: #f7f9fb;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.2px;
+    }
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      font-weight: 700;
+    }
+    .in-stock { background: #e6f5ee; color: var(--ok); }
+    .checked-out { background: #fff1dc; color: var(--warn); }
+    .section-title {
+      margin: 22px 0 8px;
+      font-size: 1.05rem;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .user-meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .logout-btn {
+      margin: 0;
+      background: #51606b;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+    }
+    .jobs-link {
+      display: inline-block;
+      text-decoration: none;
+      background: #0b7f75;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .analytics-link {
+      display: inline-block;
+      text-decoration: none;
+      background: #7c5c0f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .admin-link {
+      display: inline-block;
+      text-decoration: none;
+      background: #7a2f8f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Powder Paint Stock Monitor</h1>
+      <div class="user-meta">
+        {% if user.role == "admin" %}
+          <a class="jobs-link" href="/jobs">Jobs</a>
+          <a class="analytics-link" href="/analytics">Analytics</a>
+          <a class="admin-link" href="/admin/database">Admin</a>
+        {% endif %}
+        <span>{{ user.username }} ({{ user.role }})</span>
+        <form method="post" action="/logout">
+          <button class="logout-btn" type="submit">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid">
+      {% if user.role == "admin" %}
+      <div class="card">
+        <h2>Add Box</h2>
+        <form method="post" action="/boxes/add">
+          <label>Box Barcode / ID</label>
+          <input name="box_id" placeholder="e.g. BOX-100245" required />
+          <label>RAL Colour</label>
+          <input
+            name="ral"
+            placeholder="e.g. RAL 9010"
+            list="ral-colors"
+            title="Choose a RAL colour from the chart list"
+            required
+          />
+          <datalist id="ral-colors">
+            {% for code, name in ral_colors %}
+              <option value="{{ code }}">{{ name }}</option>
+            {% endfor %}
+          </datalist>
+          <label>Gloss</label>
+          <select name="gloss" required>
+            <option value="Matt">Matt</option>
+            <option value="Semi Gloss">Semi Gloss</option>
+            <option value="Gloss">Gloss</option>
+          </select>
+          <label>Current Weight (kg)</label>
+          <input type="number" step="0.001" min="0" name="weight_kg" required />
+          <button type="submit">Save Box</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <h2>Scan Out To Job</h2>
+        <form method="post" action="/scan/out">
+          <label>Scan Box Barcode</label>
+          <input name="box_id" required />
+          <label>Job Code</label>
+          <input name="job_code" list="open-jobs" placeholder="e.g. JOB-2041" required />
+          <datalist id="open-jobs">
+            {% for job in jobs %}
+              <option value="{{ job.code }}">{{ job.description }}</option>
+            {% endfor %}
+          </datalist>
+          <label>Production Line</label>
+          <select name="line_name" required>
+            <option value="LINE_1">Line 1</option>
+            <option value="LINE_2">Line 2</option>
+          </select>
+          <label>Weight At Checkout (kg)</label>
+          <input type="number" step="0.001" min="0" name="out_weight_kg" required />
+          <button type="submit">Check Out</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Scan Back From Job</h2>
+        <form method="post" action="/scan/in">
+          <label>Scan Box Barcode</label>
+          <input name="box_id" required />
+          <label>Weight On Return (kg)</label>
+          <input type="number" step="0.001" min="0" name="in_weight_kg" required />
+          <button type="submit">Check In + Record Usage</button>
+        </form>
+      </div>
+    </div>
+
+    {% if user.role == "admin" %}
+    <h3 class="section-title">In-Stock Summary by RAL + Gloss</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Boxes</th>
+          <th>Total Weight (kg)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in stock_summary %}
+        <tr>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.box_count }}</td>
+          <td>{{ row.total_weight_kg }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No in-stock boxes yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 class="section-title">All Boxes</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Box</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Current Weight (kg)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for box in boxes %}
+        <tr>
+          <td>{{ box.id }}</td>
+          <td>{{ box.ral }}</td>
+          <td>{{ box.gloss }}</td>
+          <td>{{ box.current_weight_kg }}</td>
+          <td>
+            {% if box.status == "IN_STOCK" %}
+              <span class="status in-stock">IN STOCK</span>
+            {% else %}
+              <span class="status checked-out">CHECKED OUT</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No boxes registered.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 class="section-title">Currently Checked Out</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Box</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Job</th>
+          <th>Line</th>
+          <th>Out Weight (kg)</th>
+          <th>Checked Out At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in active %}
+        <tr>
+          <td>{{ row.box_id }}</td>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.job_code }}</td>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.out_weight_kg }}</td>
+          <td>{{ row.checked_out_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">No active checkouts.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 class="section-title">Recent Usage (Returns)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Box</th>
+          <th>Job</th>
+          <th>Line</th>
+          <th>Return Weight (kg)</th>
+          <th>Used (kg)</th>
+          <th>Returned At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in recent_usage %}
+        <tr>
+          <td>{{ row.box_id }}</td>
+          <td>{{ row.job_code }}</td>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.weight_kg }}</td>
+          <td>{{ row.weight_used_kg }}</td>
+          <td>{{ row.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No returns recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 class="section-title">Usage by Job (RAL + Gloss)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Job</th>
+          <th>Line</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Total Used (kg)</th>
+          <th>Return Events</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in job_usage %}
+        <tr>
+          <td>{{ row.job_code }}</td>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.total_used_kg }}</td>
+          <td>{{ row.return_events }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No job usage yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</body>
+</html>

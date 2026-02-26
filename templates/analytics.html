@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics - Powder Paint Stock</title>
+  <style>
+    :root {
+      --bg: #f2f4f5;
+      --card: #ffffff;
+      --ink: #172026;
+      --muted: #6a7780;
+      --border: #d8dee3;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-link, .btn-logout {
+      text-decoration: none;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-home { background: #0b7f75; }
+    .btn-jobs { background: #7c5c0f; }
+    .btn-admin { background: #7a2f8f; }
+    .btn-logout { background: #51606b; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    .metric {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    th {
+      background: #f7f9fb;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Usage Analytics</h1>
+      <div class="actions">
+        <a class="btn-link btn-home" href="/">Dashboard</a>
+        <a class="btn-link btn-jobs" href="/jobs">Jobs</a>
+        <a class="btn-link btn-admin" href="/admin/database">Admin</a>
+        <span>{{ user.username }} ({{ user.role }})</span>
+        <form method="post" action="/logout">
+          <button class="btn-logout" type="submit">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="label">Total Powder Used</div>
+        <div class="metric">{{ overall.total_used_kg }} kg</div>
+      </div>
+      <div class="card">
+        <div class="label">Total Return Events</div>
+        <div class="metric">{{ overall.total_returns }}</div>
+      </div>
+      <div class="card">
+        <div class="label">Jobs With Usage</div>
+        <div class="metric">{{ overall.jobs_used }}</div>
+      </div>
+    </div>
+
+    <h3>Usage by RAL + Gloss</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Used (kg)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in by_type %}
+        <tr>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.used_kg }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No usage data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Usage by Job</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Job</th>
+          <th>Used (kg)</th>
+          <th>Return Events</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in by_job %}
+        <tr>
+          <td>{{ row.job_code }}</td>
+          <td>{{ row.used_kg }}</td>
+          <td>{{ row.return_events }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No usage data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Usage by Line</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Line</th>
+          <th>Used (kg)</th>
+          <th>Return Events</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in by_line %}
+        <tr>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.used_kg }}</td>
+          <td>{{ row.return_events }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No usage data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Monthly Usage</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Used (kg)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in by_month %}
+        <tr>
+          <td>{{ row.month }}</td>
+          <td>{{ row.used_kg }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2">No monthly data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

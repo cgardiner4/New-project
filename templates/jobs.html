@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jobs - Powder Paint Stock</title>
+  <style>
+    :root {
+      --bg: #f2f4f5;
+      --card: #ffffff;
+      --ink: #172026;
+      --muted: #6a7780;
+      --accent: #0d6efd;
+      --border: #d8dee3;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1000px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-link, button {
+      text-decoration: none;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-home { background: #0b7f75; }
+    .btn-analytics { background: #7c5c0f; }
+    .btn-admin { background: #7a2f8f; }
+    .btn-logout { background: #51606b; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin: 8px 0 4px;
+      color: var(--muted);
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+    .submit {
+      background: var(--accent);
+      margin-top: 12px;
+    }
+    .flash {
+      background: #fff6da;
+      border: 1px solid #f0d79d;
+      color: #5d4300;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    th {
+      background: #f7f9fb;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .mini-link {
+      text-decoration: none;
+      border-radius: 7px;
+      background: #0d6efd;
+      color: white;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .mini-btn {
+      border: 0;
+      border-radius: 7px;
+      color: white;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0;
+    }
+    .mini-finalize { background: #0f8a52; }
+    .mini-delete { background: #b42318; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Job Creation</h1>
+      <div class="actions">
+        <a class="btn-link btn-home" href="/">Dashboard</a>
+        <a class="btn-link btn-analytics" href="/analytics">Analytics</a>
+        <a class="btn-link btn-admin" href="/admin/database">Admin</a>
+        <span>{{ user.username }} ({{ user.role }})</span>
+        <form method="post" action="/logout">
+          <button class="btn-logout" type="submit">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <h2>Create Job</h2>
+      <form method="post" action="/jobs/create">
+        <label>Job Code</label>
+        <input name="code" placeholder="e.g. JOB-2041" required />
+        <label>Description</label>
+        <input name="description" placeholder="e.g. Steel gates batch" required />
+        <label>Customer (optional)</label>
+        <input name="customer" placeholder="e.g. ACME Engineering" />
+        <button class="submit" type="submit">Create Job</button>
+      </form>
+    </div>
+
+    <h3>All Jobs</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Customer</th>
+          <th>Status</th>
+          <th>Total Used (kg)</th>
+          <th>Created</th>
+          <th>Finalized</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job.code }}</td>
+          <td>{{ job.description }}</td>
+          <td>{{ job.customer or "-" }}</td>
+          <td>{{ job.status }}</td>
+          <td>{{ job.total_used_kg }}</td>
+          <td>{{ job.created_at }}</td>
+          <td>{{ job.finalized_at or "-" }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="mini-link" href="/jobs/{{ job.code }}/usage">Usage</a>
+              {% if job.status == "OPEN" %}
+              <form method="post" action="/jobs/{{ job.code }}/finalize">
+                <button class="mini-btn mini-finalize" type="submit">Finalize</button>
+              </form>
+              {% endif %}
+              <form method="post" action="/jobs/{{ job.code }}/delete">
+                <button class="mini-btn mini-delete" type="submit">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">No jobs created yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
