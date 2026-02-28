@@ -45,6 +45,42 @@ Open:
 
 `http://127.0.0.1:2026`
 
+## Raspberry Pi Auto-Boot (Systemd)
+
+On the Raspberry Pi:
+
+```bash
+cd /path/to/New\ project
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+sudo ./scripts/install_rpi_autostart.sh
+```
+
+This installs a `systemd` service that starts automatically on boot.
+
+Useful commands:
+
+```bash
+systemctl status powder-paint.service
+journalctl -u powder-paint.service -f
+```
+
+To access from any computer on the same network:
+
+1. Find Pi IP:
+```bash
+hostname -I
+```
+2. Open from another computer:
+`http://<raspberry-pi-ip>:2026`
+
+If needed, allow the port:
+
+```bash
+sudo ufw allow 2026/tcp
+```
+
 ## Run (Development)
 
 ```bash

@@ -1,0 +1,16 @@
+[Unit]
+Description=Powder Paint Stock Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/powder-paint
+ExecStart=/home/pi/powder-paint/scripts/run_production.sh
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
