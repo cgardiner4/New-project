@@ -32,12 +32,22 @@ Simple web app to track powder paint boxes by:
 - `Gloss` is restricted to `Matt`, `Semi Gloss`, or `Gloss`.
 - Stock in now has its own admin page (`/stock-in`, legacy `/boxes` still works).
 
-## Run
+## Run (Production WSGI)
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+waitress-serve --host=0.0.0.0 --port=2026 wsgi:app
+```
+
+Open:
+
+`http://127.0.0.1:2026`
+
+## Run (Development)
+
+```bash
 python app.py
 ```
 
