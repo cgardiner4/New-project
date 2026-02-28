@@ -1,0 +1,218 @@
+:root {
+  --bg: #f3f6fb;
+  --bg-accent: #e8eef8;
+  --card: #ffffff;
+  --ink: #122030;
+  --muted: #64748b;
+  --border: #d9e2ec;
+  --shadow: 0 10px 28px rgba(12, 23, 41, 0.08);
+  --primary: #2563eb;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 100% -15%, #dbe9ff 0%, transparent 65%),
+    radial-gradient(800px 400px at -5% 0%, #edf6ff 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-accent) 0%, var(--bg) 100%);
+  font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h1, h2, h3 {
+  letter-spacing: 0.1px;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 28px auto 48px;
+  padding: 0 18px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.actions, .user-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 0.83rem;
+  color: var(--muted);
+  margin: 9px 0 5px;
+}
+
+input, select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  padding: 9px 11px;
+  font-size: 0.95rem;
+}
+
+button,
+.btn-link,
+.jobs-link,
+.analytics-link,
+.admin-link,
+.boxes-link,
+.logout-btn,
+.theme-toggle,
+.btn-home,
+.btn-admin,
+.btn-jobs,
+.btn-analytics,
+.btn-logout {
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(180deg, #2b6ef6 0%, #1e58ce 100%);
+  padding: 8px 11px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.logout-btn,
+.btn-logout,
+.theme-toggle {
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+}
+
+.admin-link,
+.btn-admin {
+  background: linear-gradient(180deg, #7e34a6 0%, #66238c 100%);
+}
+
+.jobs-link,
+.btn-jobs {
+  background: linear-gradient(180deg, #0f8a7b 0%, #0d7669 100%);
+}
+
+.analytics-link,
+.btn-analytics {
+  background: linear-gradient(180deg, #8a6a20 0%, #755711 100%);
+}
+
+.boxes-link {
+  background: linear-gradient(180deg, #1970f5 0%, #0f5fd9 100%);
+}
+
+.flash {
+  background: #fff6da;
+  border: 1px solid #f0d79d;
+  color: #5d4300;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 10px;
+  border-bottom: 1px solid #ecf1f7;
+  font-size: 0.9rem;
+}
+
+th {
+  background: #f6f9fc;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.section-title {
+  margin: 22px 0 8px;
+  font-size: 1.05rem;
+}
+
+.status {
+  display: inline-block;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+
+.in-stock {
+  background: #e7f8ee;
+  color: #137a4b;
+}
+
+.checked-out {
+  background: #fff3de;
+  color: #a35508;
+}
+
+body.dark {
+  --bg: #0f1720;
+  --bg-accent: #111927;
+  --card: #111827;
+  --ink: #e5e7eb;
+  --muted: #9ca3af;
+  --border: #2a3441;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+body.dark .card {
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+}
+
+body.dark input,
+body.dark select {
+  background: #0f172a;
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+body.dark table {
+  background: var(--card);
+}
+
+body.dark th {
+  background: #17212b;
+}
