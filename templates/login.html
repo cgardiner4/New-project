@@ -80,9 +80,32 @@
       color: var(--muted);
       font-size: 0.82rem;
     }
+    .theme-toggle {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      background: #334155;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: auto;
+      margin: 0;
+    }
+    body.dark {
+      --bg: #0f1720;
+      --card: #111827;
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #2a3441;
+    }
   </style>
 </head>
 <body>
+  <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
   <div class="card">
     <h1>Sign In</h1>
     <p class="sub">Powder Paint Stock Monitor</p>
@@ -105,5 +128,25 @@
 
     <p class="help">Default accounts: admin/admin123 and user/user123</p>
   </div>
+  <script>
+    (function () {
+      const key = "themeMode";
+      const body = document.body;
+      const btn = document.querySelector("[data-theme-toggle]");
+      const apply = (mode) => {
+        const dark = mode === "dark";
+        body.classList.toggle("dark", dark);
+        if (btn) btn.textContent = dark ? "Light" : "Dark";
+      };
+      apply(localStorage.getItem(key) || "light");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          const next = body.classList.contains("dark") ? "light" : "dark";
+          localStorage.setItem(key, next);
+          apply(next);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

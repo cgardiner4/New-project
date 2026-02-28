@@ -26,9 +26,11 @@ Simple web app to track powder paint boxes by:
 - Admin settings page (`/admin/database`) to change the database directory.
 - Admin page can add/remove users and change access role (`admin` or `user`).
 - Admin page can delete added paint boxes (only when no usage history exists).
+- Database directory supports local and network locations (mounted paths and `smb://` style input).
 - Box setup validation:
 - `RAL` must be selected from the RAL Classic colour chart list.
 - `Gloss` is restricted to `Matt`, `Semi Gloss`, or `Gloss`.
+- Stock in now has its own admin page (`/stock-in`, legacy `/boxes` still works).
 
 ## Run
 
@@ -41,7 +43,9 @@ python app.py
 
 Open:
 
-`http://127.0.0.1:5000`
+`http://127.0.0.1:8080`
+
+This runs the app using Waitress (production WSGI server).
 
 ## Login
 

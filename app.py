@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 from functools import wraps
 import re
+from urllib.parse import urlparse
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -153,7 +154,29 @@ def ensure_line_columns(db: sqlite3.Connection) -> None:
 
 
 def normalize_directory_input(directory_input: str) -> Path:
-    selected = Path(directory_input).expanduser()
+    raw = directory_input.strip()
+    if not raw:
+        raise OSError("Empty path")
+
+    lower_raw = raw.lower()
+    if lower_raw.startswith(("smb://", "afp://", "nfs://")):
+        # Convert URL-style network locations to mounted filesystem paths.
+        # Example: smb://server/share/folder -> /Volumes/share/folder
+        parsed = urlparse(raw)
+        if not parsed.path or parsed.path == "/":
+            raise OSError("Network URL must include a share name")
+        segments = [segment for segment in parsed.path.split("/") if segment]
+        if not segments:
+            raise OSError("Network URL must include a share name")
+        share = segments[0]
+        suffix = Path(*segments[1:]) if len(segments) > 1 else Path()
+        return (Path("/Volumes") / share / suffix).resolve()
+
+    if raw.startswith("\\\\"):
+        # Support UNC-style input by translating to POSIX-style network path.
+        raw = "//" + raw.lstrip("\\").replace("\\", "/")
+
+    selected = Path(raw).expanduser()
     if not selected.is_absolute():
         selected = (BASE_DIR / selected).resolve()
     return selected
@@ -327,6 +350,26 @@ def index():
         job_usage=job_usage,
         stock_summary=stock_summary,
         jobs=jobs,
+        ral_colors=RAL_CLASSIC_COLORS,
+        user=current_user(),
+    )
+
+
+@app.route("/stock-in")
+@app.route("/boxes")
+@role_required("admin")
+def boxes_page():
+    db = get_db()
+    boxes = db.execute(
+        """
+        SELECT id, ral, gloss, current_weight_kg, status, created_at
+        FROM boxes
+        ORDER BY status, ral, gloss, id
+        """
+    ).fetchall()
+    return render_template(
+        "boxes.html",
+        boxes=boxes,
         ral_colors=RAL_CLASSIC_COLORS,
         user=current_user(),
     )
@@ -617,7 +660,7 @@ def update_database_directory():
     try:
         target_dir = normalize_directory_input(raw_directory)
     except OSError:
-        flash("Invalid database directory.")
+        flash("Invalid database directory or network path.")
         return redirect(url_for("admin_database_page"))
 
     current_db_path = get_db_path()
@@ -980,5 +1023,7 @@ def scan_in():
 
 
 if __name__ == "__main__":
+    from waitress import serve
+
     init_db()
-    app.run(debug=True)
+    serve(app, host="192.168.1.200", port=8080)

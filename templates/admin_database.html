@@ -132,6 +132,25 @@
       font-size: 0.8rem;
       background: #0d6efd;
     }
+    .theme-toggle {
+      margin: 0;
+      background: #334155;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+    }
+    body.dark {
+      --bg: #0f1720;
+      --card: #111827;
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #2a3441;
+    }
+    body.dark th {
+      background: #17212b;
+    }
+    body.dark table {
+      background: var(--card);
+    }
   </style>
 </head>
 <body>
@@ -140,6 +159,7 @@
       <h1>Admin Database Settings</h1>
       <div class="actions">
         <a class="btn-link btn-home" href="/">Dashboard</a>
+        <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
         <span>{{ user.username }} ({{ user.role }})</span>
         <form method="post" action="/logout">
           <button class="btn-logout" type="submit">Log Out</button>
@@ -163,8 +183,13 @@
     <div class="card">
       <h2>Change Database Directory</h2>
       <form method="post" action="/admin/database">
-        <label>New Directory (absolute or relative to app folder)</label>
-        <input name="db_directory" placeholder="/path/to/database-folder" required />
+        <label>New Directory (local path, mounted network path, or network URL)</label>
+        <input name="db_directory" placeholder="/Volumes/FactoryShare/paint-db" required />
+        <p class="meta">
+          Examples: <code>/Volumes/FactoryShare/paint-db</code>,
+          <code>//server/share/paint-db</code>,
+          <code>smb://server/share/paint-db</code>
+        </p>
         <button class="submit" type="submit">Update Database Directory</button>
       </form>
     </div>
@@ -266,5 +291,25 @@
       </table>
     </div>
   </div>
+  <script>
+    (function () {
+      const key = "themeMode";
+      const body = document.body;
+      const btn = document.querySelector("[data-theme-toggle]");
+      const apply = (mode) => {
+        const dark = mode === "dark";
+        body.classList.toggle("dark", dark);
+        if (btn) btn.textContent = dark ? "Light" : "Dark";
+      };
+      apply(localStorage.getItem(key) || "light");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          const next = body.classList.contains("dark") ? "light" : "dark";
+          localStorage.setItem(key, next);
+          apply(next);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

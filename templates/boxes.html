@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jobs - Powder Paint Stock</title>
+  <title>Stock In - Powder Paint Stock</title>
   <style>
     :root {
       --bg: #f2f4f5;
@@ -46,9 +46,14 @@
       cursor: pointer;
     }
     .btn-home { background: #0b7f75; }
-    .btn-analytics { background: #7c5c0f; }
     .btn-admin { background: #7a2f8f; }
     .btn-logout { background: #51606b; }
+    .theme-toggle {
+      margin: 0;
+      background: #334155;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+    }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -63,13 +68,14 @@
       margin: 8px 0 4px;
       color: var(--muted);
     }
-    input {
+    input, select {
       width: 100%;
       box-sizing: border-box;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 8px 10px;
       font-size: 0.95rem;
+      background: #fff;
     }
     .submit {
       background: var(--accent);
@@ -102,38 +108,6 @@
       color: var(--muted);
       font-size: 0.82rem;
     }
-    .row-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .mini-link {
-      text-decoration: none;
-      border-radius: 7px;
-      background: #0d6efd;
-      color: white;
-      padding: 4px 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-    .mini-btn {
-      border: 0;
-      border-radius: 7px;
-      color: white;
-      padding: 4px 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 0;
-    }
-    .mini-finalize { background: #0f8a52; }
-    .mini-delete { background: #b42318; }
-    .theme-toggle {
-      margin: 0;
-      background: #334155;
-      padding: 8px 11px;
-      font-size: 0.86rem;
-    }
     body.dark {
       --bg: #0f1720;
       --card: #111827;
@@ -152,10 +126,9 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <h1>Job Creation</h1>
+      <h1>Stock In</h1>
       <div class="actions">
         <a class="btn-link btn-home" href="/">Dashboard</a>
-        <a class="btn-link btn-analytics" href="/analytics">Analytics</a>
         <a class="btn-link btn-admin" href="/admin/database">Admin</a>
         <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
         <span>{{ user.username }} ({{ user.role }})</span>
@@ -174,58 +147,58 @@
     {% endwith %}
 
     <div class="card">
-      <h2>Create Job</h2>
-      <form method="post" action="/jobs/create">
-        <label>Job Code</label>
-        <input name="code" placeholder="e.g. JOB-2041" required />
-        <label>Description</label>
-        <input name="description" placeholder="e.g. Steel gates batch" required />
-        <label>Customer (optional)</label>
-        <input name="customer" placeholder="e.g. ACME Engineering" />
-        <button class="submit" type="submit">Create Job</button>
+      <form method="post" action="/boxes/add">
+        <label>Box Barcode / ID</label>
+        <input name="box_id" placeholder="e.g. BOX-100245" required />
+        <label>RAL Colour</label>
+        <input
+          name="ral"
+          placeholder="e.g. RAL 9010"
+          list="ral-colors"
+          title="Choose a RAL colour from the chart list"
+          required
+        />
+        <datalist id="ral-colors">
+          {% for code, name in ral_colors %}
+            <option value="{{ code }}">{{ name }}</option>
+          {% endfor %}
+        </datalist>
+        <label>Gloss</label>
+        <select name="gloss" required>
+          <option value="Matt">Matt</option>
+          <option value="Semi Gloss">Semi Gloss</option>
+          <option value="Gloss">Gloss</option>
+        </select>
+        <label>Current Weight (kg)</label>
+        <input type="number" step="0.001" min="0" name="weight_kg" required />
+        <button class="submit" type="submit">Save Box</button>
       </form>
     </div>
 
-    <h3>All Jobs</h3>
+    <h3>All Stock</h3>
     <table>
       <thead>
         <tr>
-          <th>Code</th>
-          <th>Description</th>
-          <th>Customer</th>
+          <th>Box</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Current Weight (kg)</th>
           <th>Status</th>
-          <th>Total Used (kg)</th>
           <th>Created</th>
-          <th>Finalized</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for job in jobs %}
+        {% for box in boxes %}
         <tr>
-          <td>{{ job.code }}</td>
-          <td>{{ job.description }}</td>
-          <td>{{ job.customer or "-" }}</td>
-          <td>{{ job.status }}</td>
-          <td>{{ job.total_used_kg }}</td>
-          <td>{{ job.created_at }}</td>
-          <td>{{ job.finalized_at or "-" }}</td>
-          <td>
-            <div class="row-actions">
-              <a class="mini-link" href="/jobs/{{ job.code }}/usage">Usage</a>
-              {% if job.status == "OPEN" %}
-              <form method="post" action="/jobs/{{ job.code }}/finalize">
-                <button class="mini-btn mini-finalize" type="submit">Finalize</button>
-              </form>
-              {% endif %}
-              <form method="post" action="/jobs/{{ job.code }}/delete">
-                <button class="mini-btn mini-delete" type="submit">Delete</button>
-              </form>
-            </div>
-          </td>
+          <td>{{ box.id }}</td>
+          <td>{{ box.ral }}</td>
+          <td>{{ box.gloss }}</td>
+          <td>{{ box.current_weight_kg }}</td>
+          <td>{{ box.status }}</td>
+          <td>{{ box.created_at }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="8">No jobs created yet.</td></tr>
+        <tr><td colspan="6">No boxes added yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

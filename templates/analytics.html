@@ -90,6 +90,25 @@
       color: var(--muted);
       font-size: 0.82rem;
     }
+    .theme-toggle {
+      margin: 0;
+      background: #334155;
+      padding: 8px 11px;
+      font-size: 0.86rem;
+    }
+    body.dark {
+      --bg: #0f1720;
+      --card: #111827;
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #2a3441;
+    }
+    body.dark th {
+      background: #17212b;
+    }
+    body.dark table {
+      background: var(--card);
+    }
   </style>
 </head>
 <body>
@@ -100,6 +119,7 @@
         <a class="btn-link btn-home" href="/">Dashboard</a>
         <a class="btn-link btn-jobs" href="/jobs">Jobs</a>
         <a class="btn-link btn-admin" href="/admin/database">Admin</a>
+        <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
         <span>{{ user.username }} ({{ user.role }})</span>
         <form method="post" action="/logout">
           <button class="btn-logout" type="submit">Log Out</button>
@@ -208,5 +228,25 @@
       </tbody>
     </table>
   </div>
+  <script>
+    (function () {
+      const key = "themeMode";
+      const body = document.body;
+      const btn = document.querySelector("[data-theme-toggle]");
+      const apply = (mode) => {
+        const dark = mode === "dark";
+        body.classList.toggle("dark", dark);
+        if (btn) btn.textContent = dark ? "Light" : "Dark";
+      };
+      apply(localStorage.getItem(key) || "light");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          const next = body.classList.contains("dark") ? "light" : "dark";
+          localStorage.setItem(key, next);
+          apply(next);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

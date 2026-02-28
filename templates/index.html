@@ -148,6 +148,16 @@
       font-size: 0.84rem;
       font-weight: 600;
     }
+    .boxes-link {
+      display: inline-block;
+      text-decoration: none;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
     .analytics-link {
       display: inline-block;
       text-decoration: none;
@@ -168,6 +178,27 @@
       font-size: 0.84rem;
       font-weight: 600;
     }
+    .theme-toggle {
+      margin: 0;
+      background: #334155;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+    }
+    body.dark {
+      --bg: #0f1720;
+      --card: #111827;
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #2a3441;
+      --ok: #34d399;
+      --warn: #fbbf24;
+    }
+    body.dark th {
+      background: #17212b;
+    }
+    body.dark table {
+      background: var(--card);
+    }
   </style>
 </head>
 <body>
@@ -176,10 +207,12 @@
       <h1>Powder Paint Stock Monitor</h1>
       <div class="user-meta">
         {% if user.role == "admin" %}
+          <a class="boxes-link" href="/stock-in">Stock In</a>
           <a class="jobs-link" href="/jobs">Jobs</a>
           <a class="analytics-link" href="/analytics">Analytics</a>
           <a class="admin-link" href="/admin/database">Admin</a>
         {% endif %}
+        <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
         <span>{{ user.username }} ({{ user.role }})</span>
         <form method="post" action="/logout">
           <button class="logout-btn" type="submit">Log Out</button>
@@ -196,38 +229,6 @@
     {% endwith %}
 
     <div class="grid">
-      {% if user.role == "admin" %}
-      <div class="card">
-        <h2>Add Box</h2>
-        <form method="post" action="/boxes/add">
-          <label>Box Barcode / ID</label>
-          <input name="box_id" placeholder="e.g. BOX-100245" required />
-          <label>RAL Colour</label>
-          <input
-            name="ral"
-            placeholder="e.g. RAL 9010"
-            list="ral-colors"
-            title="Choose a RAL colour from the chart list"
-            required
-          />
-          <datalist id="ral-colors">
-            {% for code, name in ral_colors %}
-              <option value="{{ code }}">{{ name }}</option>
-            {% endfor %}
-          </datalist>
-          <label>Gloss</label>
-          <select name="gloss" required>
-            <option value="Matt">Matt</option>
-            <option value="Semi Gloss">Semi Gloss</option>
-            <option value="Gloss">Gloss</option>
-          </select>
-          <label>Current Weight (kg)</label>
-          <input type="number" step="0.001" min="0" name="weight_kg" required />
-          <button type="submit">Save Box</button>
-        </form>
-      </div>
-      {% endif %}
-
       <div class="card">
         <h2>Scan Out To Job</h2>
         <form method="post" action="/scan/out">
@@ -407,5 +408,25 @@
     </table>
     {% endif %}
   </div>
+  <script>
+    (function () {
+      const key = "themeMode";
+      const body = document.body;
+      const btn = document.querySelector("[data-theme-toggle]");
+      const apply = (mode) => {
+        const dark = mode === "dark";
+        body.classList.toggle("dark", dark);
+        if (btn) btn.textContent = dark ? "Light" : "Dark";
+      };
+      apply(localStorage.getItem(key) || "light");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          const next = body.classList.contains("dark") ? "light" : "dark";
+          localStorage.setItem(key, next);
+          apply(next);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
