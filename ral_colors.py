@@ -212,6 +212,8 @@ RAL_CLASSIC_COLORS = [
     ("RAL 9018", "Papyrus white"),
     ("RAL 9022", "Pearl light grey"),
     ("RAL 9023", "Pearl dark grey"),
+    ("Zinc Primer", "Zinc Primer"),
+    
 ]
 
 RAL_CLASSIC_CODES = {code for code, _ in RAL_CLASSIC_COLORS}
