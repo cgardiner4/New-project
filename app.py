@@ -1024,13 +1024,4 @@ def scan_in():
 
 if __name__ == "__main__":
     init_db()
-    try:
-        from waitress import serve
-    except ModuleNotFoundError:
-        print(
-            "Waitress is not installed. "
-            "Run: pip install waitress  (or pip install -r requirements.txt)"
-        )
-        app.run(debug=True, host="0.0.0.0", port=2026)
-    else:
-        serve(app, host="0.0.0.0", port=2026)
+    app.run(debug=True)

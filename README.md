@@ -43,9 +43,7 @@ python app.py
 
 Open:
 
-`http://127.0.0.1:2026`
-
-This runs the app using Waitress (production WSGI server).
+`http://127.0.0.1:5000`
 
 ## Login
 
