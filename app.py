@@ -1026,4 +1026,4 @@ if __name__ == "__main__":
     from waitress import serve
 
     init_db()
-    serve(app, host="192.168.1.200", port=8080)
+    serve(app, host="0.0.0.0", port=8080)
