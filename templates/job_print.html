@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contract Receipt - {{ job.code }}</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+      background: #fff;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 10mm;
+      box-sizing: border-box;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .toolbar button {
+      border: 1px solid #aaa;
+      background: #f5f5f5;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      letter-spacing: 0.3px;
+    }
+    h2 {
+      margin: 12px 0 6px;
+      font-size: 14px;
+      border-bottom: 1px solid #222;
+      padding-bottom: 2px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 10px;
+    }
+    .field {
+      border: 1px solid #111;
+      padding: 4px 6px;
+      min-height: 28px;
+      font-size: 12px;
+    }
+    .label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .value {
+      min-height: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    th, td {
+      border: 1px solid #111;
+      padding: 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .note {
+      border: 1px solid #111;
+      padding: 6px;
+      font-size: 10px;
+      margin-top: 8px;
+      line-height: 1.35;
+    }
+    .process-table td {
+      height: 20px;
+    }
+    .pack-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px 6px;
+      font-size: 10px;
+      margin-top: 6px;
+    }
+    .pack-item {
+      border: 1px solid #111;
+      padding: 2px 4px;
+      height: 16px;
+    }
+    @media print {
+      .toolbar {
+        display: none;
+      }
+      .page {
+        margin: 0;
+        width: auto;
+        min-height: auto;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="toolbar">
+      <button onclick="window.print()">Print</button>
+      <button onclick="window.close()">Close</button>
+    </div>
+
+    <h1>OCF 1 - Contract Receipt</h1>
+
+    <div class="grid">
+      <div class="field"><span class="label">Job Number</span><div class="value">{{ job.code }}</div></div>
+      <div class="field"><span class="label">Order Number</span><div class="value">{{ job.order_number or "" }}</div></div>
+      <div class="field"><span class="label">Customer</span><div class="value">{{ job.customer or "" }}</div></div>
+      <div class="field"><span class="label">Colour</span><div class="value">{{ job.colour or "" }}</div></div>
+      <div class="field"><span class="label">Gloss Level</span><div class="value">{{ job.gloss_level or "" }}</div></div>
+      <div class="field"><span class="label">Date Receipt of Order</span><div class="value">{{ job.date_receipt_order or "" }}</div></div>
+      <div class="field"><span class="label">Date Receipt of Materials</span><div class="value">{{ job.date_receipt_materials or "" }}</div></div>
+      <div class="field"><span class="label">Total No Pieces Supplied</span><div class="value">{{ job.total_pieces_supplied or "" }}</div></div>
+      <div class="field"><span class="label">Date Required of Materials</span><div class="value">{{ job.date_required_materials or "" }}</div></div>
+      <div class="field"><span class="label">Delivered In/On</span><div class="value">{{ job.delivery_method or "" }}</div></div>
+      <div class="field"><span class="label">Checked In By</span><div class="value">{{ job.checked_in_by or "" }}</div></div>
+      <div class="field"><span class="label">Date</span><div class="value">{{ job.checked_in_date or "" }}</div></div>
+    </div>
+
+    <div class="field" style="margin-top:6px;">
+      <span class="label">Process Issues</span>
+      <div class="value">{{ job.process_issues or "" }}</div>
+    </div>
+
+    <h2>Powder Usage (Recorded)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Line</th>
+          <th>RAL</th>
+          <th>Gloss</th>
+          <th>Total KGS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in usage_rows %}
+        <tr>
+          <td>{{ row.line_name }}</td>
+          <td>{{ row.ral }}</td>
+          <td>{{ row.gloss }}</td>
+          <td>{{ row.used_kg }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4">No powder usage recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table style="margin-top:6px;">
+      <tr>
+        <th>Total Powder Used (KGS)</th>
+        <td>{{ totals.total_used_kg }}</td>
+        <th>Return Events</th>
+        <td>{{ totals.return_events }}</td>
+      </tr>
+    </table>
+
+    <h2>Process Sign-Off</h2>
+    <table class="process-table">
+      <thead>
+        <tr>
+          <th>Process</th>
+          <th>Date</th>
+          <th>Quantity</th>
+          <th>Test Panels</th>
+          <th>Signed Off By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Goods Inwards</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Pretreatment</td><td></td><td></td><td>YES / NO</td><td></td></tr>
+        <tr><td>Jigging</td><td></td><td></td><td>YES / NO</td><td></td></tr>
+        <tr><td>Tacking Off</td><td></td><td></td><td>YES / NO</td><td></td></tr>
+        <tr><td>Packing</td><td></td><td></td><td>YES / NO</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Packing Record</h2>
+    <div class="pack-grid">
+      {% for n in range(1, 60) %}
+      <div class="pack-item">Pack {{ n }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="note">
+      This form is to be held in the job wallet during all stages of the coating process.
+      Each process must be signed off before passing to the next stage.
+      Printed: {{ now }}
+    </div>
+  </div>
+</body>
+</html>

@@ -175,14 +175,52 @@
     {% endwith %}
 
     <div class="card">
-      <h2>Create Job</h2>
+      <h2>Contract Receipt Job Setup</h2>
       <form method="post" action="/jobs/create">
         <label>Job Code</label>
         <input name="code" placeholder="e.g. JOB-2041" required />
-        <label>Description</label>
-        <input name="description" placeholder="e.g. Steel gates batch" required />
-        <label>Customer (optional)</label>
-        <input name="customer" placeholder="e.g. ACME Engineering" />
+        <label>Order Number</label>
+        <input name="order_number" placeholder="e.g. ORD-9481" required />
+        <label>Customer</label>
+        <input name="customer" placeholder="e.g. ACME Engineering" required />
+        <label>Description / Materials Details</label>
+        <input name="description" placeholder="See customer order / OCF3 details" />
+        <label>Colour</label>
+        <input name="colour" placeholder="e.g. RAL 9010" />
+        <label>Gloss Level</label>
+        <select name="gloss_level">
+          <option value="">Select</option>
+          <option value="MATT">MATT</option>
+          <option value="SEMI-GLOSS">SEMI-GLOSS</option>
+          <option value="GLOSS">GLOSS</option>
+          <option value="ANY">ANY</option>
+        </select>
+        <label>Date Receipt of Order</label>
+        <input type="date" name="date_receipt_order" />
+        <label>Date Receipt of Materials</label>
+        <input type="date" name="date_receipt_materials" />
+        <label>Date Required of Materials</label>
+        <input type="date" name="date_required_materials" />
+        <label>Total No Pieces Supplied</label>
+        <input type="number" min="0" step="1" name="total_pieces_supplied" />
+        <label>Delivered In</label>
+        <select name="delivered_in">
+          <option value="">Select</option>
+          <option value="PALLET">PALLET</option>
+          <option value="BOXED">BOXED</option>
+          <option value="LOOSE">LOOSE</option>
+          <option value="STANDARD">STANDARD</option>
+          <option value="BLOCKS">BLOCKS</option>
+          <option value="SMARTS">SMARTS</option>
+          <option value="ALIPLAST">ALIPLAST</option>
+          <option value="CUSTOMADE">CUSTOMADE</option>
+        </select>
+        <label>Process Issues</label>
+        <input name="process_issues" />
+        <label>Checked In By</label>
+        <input name="checked_in_by" />
+        <label>Checked In Date</label>
+        <input type="date" name="checked_in_date" />
         <button class="submit" type="submit">Create Job</button>
       </form>
     </div>
@@ -192,8 +230,13 @@
       <thead>
         <tr>
           <th>Code</th>
+          <th>Order</th>
           <th>Description</th>
           <th>Customer</th>
+          <th>Colour</th>
+          <th>Gloss</th>
+          <th>Delivered In</th>
+          <th>Required Date</th>
           <th>Status</th>
           <th>Total Used (kg)</th>
           <th>Created</th>
@@ -205,8 +248,13 @@
         {% for job in jobs %}
         <tr>
           <td>{{ job.code }}</td>
+          <td>{{ job.order_number or "-" }}</td>
           <td>{{ job.description }}</td>
           <td>{{ job.customer or "-" }}</td>
+          <td>{{ job.colour or "-" }}</td>
+          <td>{{ job.gloss_level or "-" }}</td>
+          <td>{{ job.delivery_method or "-" }}</td>
+          <td>{{ job.date_required_materials or "-" }}</td>
           <td>{{ job.status }}</td>
           <td>{{ job.total_used_kg }}</td>
           <td>{{ job.created_at }}</td>
@@ -214,6 +262,7 @@
           <td>
             <div class="row-actions">
               <a class="mini-link" href="/jobs/{{ job.code }}/usage">Usage</a>
+              <a class="mini-link" href="/jobs/{{ job.code }}/print" target="_blank" rel="noopener">Print</a>
               {% if job.status == "OPEN" %}
               <form method="post" action="/jobs/{{ job.code }}/finalize">
                 <button class="mini-btn mini-finalize" type="submit">Finalize</button>
@@ -226,7 +275,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="8">No jobs created yet.</td></tr>
+        <tr><td colspan="13">No jobs created yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

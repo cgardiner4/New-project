@@ -78,6 +78,19 @@ def init_db(db_path: Path | None = None) -> None:
             code TEXT PRIMARY KEY,
             description TEXT NOT NULL,
             customer TEXT,
+            order_number TEXT,
+            colour TEXT,
+            gloss_level TEXT,
+            date_receipt_order TEXT,
+            date_receipt_materials TEXT,
+            total_pieces_supplied INTEGER,
+            date_required_materials TEXT,
+            delivery_method TEXT,
+            stillage_type TEXT,
+            system_type TEXT,
+            process_issues TEXT,
+            checked_in_by TEXT,
+            checked_in_date TEXT,
             status TEXT NOT NULL CHECK (status IN ('OPEN', 'CLOSED')),
             created_at TEXT NOT NULL
         );
@@ -140,8 +153,25 @@ def ensure_jobs_columns(db: sqlite3.Connection) -> None:
         row[1]
         for row in db.execute("PRAGMA table_info(jobs)").fetchall()
     }
-    if "finalized_at" not in columns:
-        db.execute("ALTER TABLE jobs ADD COLUMN finalized_at TEXT")
+    required_columns = {
+        "finalized_at": "TEXT",
+        "order_number": "TEXT",
+        "colour": "TEXT",
+        "gloss_level": "TEXT",
+        "date_receipt_order": "TEXT",
+        "date_receipt_materials": "TEXT",
+        "total_pieces_supplied": "INTEGER",
+        "date_required_materials": "TEXT",
+        "delivery_method": "TEXT",
+        "stillage_type": "TEXT",
+        "system_type": "TEXT",
+        "process_issues": "TEXT",
+        "checked_in_by": "TEXT",
+        "checked_in_date": "TEXT",
+    }
+    for name, col_type in required_columns.items():
+        if name not in columns:
+            db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {col_type}")
 
 
 def ensure_line_columns(db: sqlite3.Connection) -> None:
@@ -384,6 +414,11 @@ def jobs_page():
         SELECT j.code,
                j.description,
                j.customer,
+               j.order_number,
+               j.colour,
+               j.gloss_level,
+               j.delivery_method,
+               j.date_required_materials,
                j.status,
                j.created_at,
                j.finalized_at,
@@ -391,7 +426,8 @@ def jobs_page():
         FROM jobs j
         LEFT JOIN movements m
           ON m.job_code = j.code AND m.action = 'IN'
-        GROUP BY j.code, j.description, j.customer, j.status, j.created_at, j.finalized_at
+        GROUP BY j.code, j.description, j.customer, j.order_number, j.colour, j.gloss_level,
+                 j.delivery_method, j.date_required_materials, j.status, j.created_at, j.finalized_at
         ORDER BY j.created_at DESC
         """
     ).fetchall()
@@ -404,9 +440,36 @@ def create_job():
     code = request.form.get("code", "").strip().upper()
     description = request.form.get("description", "").strip()
     customer = request.form.get("customer", "").strip()
+    order_number = request.form.get("order_number", "").strip()
+    colour = request.form.get("colour", "").strip()
+    gloss_level = request.form.get("gloss_level", "").strip()
+    date_receipt_order = request.form.get("date_receipt_order", "").strip()
+    date_receipt_materials = request.form.get("date_receipt_materials", "").strip()
+    total_pieces_raw = request.form.get("total_pieces_supplied", "").strip()
+    date_required_materials = request.form.get("date_required_materials", "").strip()
+    delivered_in = request.form.get("delivered_in", "").strip()
+    process_issues = request.form.get("process_issues", "").strip()
+    checked_in_by = request.form.get("checked_in_by", "").strip()
+    checked_in_date = request.form.get("checked_in_date", "").strip()
 
-    if not code or not description:
-        flash("Job code and description are required.")
+    if not code or not order_number or not customer:
+        flash("Job code, order number, and customer are required.")
+        return redirect(url_for("jobs_page"))
+
+    if gloss_level and gloss_level not in {"MATT", "SEMI-GLOSS", "GLOSS", "ANY"}:
+        flash("Gloss level must be Matt, Semi-Gloss, Gloss, or Any.")
+        return redirect(url_for("jobs_page"))
+    if delivered_in and delivered_in not in {
+        "PALLET",
+        "BOXED",
+        "LOOSE",
+        "STANDARD",
+        "BLOCKS",
+        "SMARTS",
+        "ALIPLAST",
+        "CUSTOMADE",
+    }:
+        flash("Delivered In value is invalid.")
         return redirect(url_for("jobs_page"))
 
     db = get_db()
@@ -415,12 +478,45 @@ def create_job():
         flash(f"Job {code} already exists.")
         return redirect(url_for("jobs_page"))
 
+    total_pieces_supplied = None
+    if total_pieces_raw:
+        try:
+            total_pieces_supplied = int(total_pieces_raw)
+            if total_pieces_supplied < 0:
+                raise ValueError
+        except ValueError:
+            flash("Total pieces supplied must be a non-negative whole number.")
+            return redirect(url_for("jobs_page"))
+
     db.execute(
         """
-        INSERT INTO jobs(code, description, customer, status, created_at)
-        VALUES (?, ?, ?, 'OPEN', ?)
+        INSERT INTO jobs(
+            code, description, customer, order_number, colour, gloss_level,
+            date_receipt_order, date_receipt_materials, total_pieces_supplied,
+            date_required_materials, delivery_method, stillage_type, system_type,
+            process_issues, checked_in_by, checked_in_date, status, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?)
         """,
-        (code, description, customer, now_iso()),
+        (
+            code,
+            description or "",
+            customer,
+            order_number,
+            colour,
+            gloss_level,
+            date_receipt_order,
+            date_receipt_materials,
+            total_pieces_supplied,
+            date_required_materials,
+            delivered_in,
+            "",
+            "",
+            process_issues,
+            checked_in_by,
+            checked_in_date,
+            now_iso(),
+        ),
     )
     db.commit()
     flash(f"Job {code} created.")
@@ -539,6 +635,60 @@ def job_usage_page(job_code: str):
         usage_rows=usage_rows,
         totals=totals,
         user=current_user(),
+    )
+
+
+@app.route("/jobs/<job_code>/print")
+@role_required("admin")
+def job_print_page(job_code: str):
+    code = job_code.strip().upper()
+    db = get_db()
+    job = db.execute(
+        """
+        SELECT code, description, customer, order_number, colour, gloss_level,
+               date_receipt_order, date_receipt_materials, total_pieces_supplied,
+               date_required_materials, delivery_method, process_issues,
+               checked_in_by, checked_in_date, status, created_at, finalized_at
+        FROM jobs
+        WHERE code = ?
+        """,
+        (code,),
+    ).fetchone()
+    if not job:
+        flash(f"Job {code} was not found.")
+        return redirect(url_for("jobs_page"))
+
+    usage_rows = db.execute(
+        """
+        SELECT b.ral,
+               b.gloss,
+               COALESCE(m.line_name, 'UNASSIGNED') AS line_name,
+               ROUND(SUM(m.weight_used_kg), 3) AS used_kg
+        FROM movements m
+        JOIN boxes b ON b.id = m.box_id
+        WHERE m.job_code = ? AND m.action = 'IN'
+        GROUP BY b.ral, b.gloss, COALESCE(m.line_name, 'UNASSIGNED')
+        ORDER BY b.ral, b.gloss, line_name
+        """,
+        (code,),
+    ).fetchall()
+
+    totals = db.execute(
+        """
+        SELECT ROUND(COALESCE(SUM(weight_used_kg), 0), 3) AS total_used_kg,
+               COUNT(*) AS return_events
+        FROM movements
+        WHERE job_code = ? AND action = 'IN'
+        """,
+        (code,),
+    ).fetchone()
+
+    return render_template(
+        "job_print.html",
+        job=job,
+        usage_rows=usage_rows,
+        totals=totals,
+        now=now_iso(),
     )
 
 
